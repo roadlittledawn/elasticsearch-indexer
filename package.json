@@ -13,6 +13,7 @@
     "lint": "node_modules/.bin/eslint src"
   },
   "dependencies": {
+    "aws-sdk": "^2.489.0",
     "cheerio": "^1.0.0-rc.2",
     "filesystem": "^1.0.1",
     "node-fetch": "^2.2.0"
