@@ -14,12 +14,14 @@ async function indexDocument() {
   var endpoint = new AWS.Endpoint(domain);
   var request = new AWS.HttpRequest(endpoint, region);
 
-  var json = await getDocsJSON(3);
+  var json = await getDocsJSON();
   var { docsPages } =  json;
 
   docsPages.forEach(element => {
     request.method = 'PUT';
     request.path = `/${index}/${type}/${element.docsPage.nodeId}`;
+    // Remove line break and spacing characters that the Drupal Views display spits out.
+    element.docsPage.body = element.docsPage.body.replace(/(\r\n|\n|\r|\t)/gm,"");
     request.body = JSON.stringify(element.docsPage);
     request.headers['host'] = domain;
     request.headers['Content-Type'] = 'application/json';
