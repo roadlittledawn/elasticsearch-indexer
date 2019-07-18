@@ -1,17 +1,27 @@
-# Quick HTML Scraper
-A _very_ simple example that uses `fetch` and `cheerio` to retrieve and parse the HTML body from a remote website.
+# What does it do?
+Experimental Node.js app to get content from non-product New Relic web properties and index them in an AWS Elasticsearch cluster. This can ultimately replace Swiftype which these web properties use to crawl their sites, index the pages, and serve that indexed data via API to provide search results for some of the sites.
+
+This uses Node.js to run scripts, AWS Elasticsearch (in Clinton's account for now), and AWS DynamobDB to track crawler history and lookup Elasticsearch IDs (in Clinton's account for now).
 
 ## Installation
-_Requirements:_ you must have at least __Node 7__ (due to `async/await` functions) and __Yarn__.
+Work in Progress
 
-1. Clone this repo
-2. Within the project root, run `yarn install`
-3. Then run `yarn start`
+## How to run
+Run `npm start`.
 
-The console will then output:
-- The `<title>` element's inner text content
-- Each `<a>` element's `href` attribute and inner text content
+To run specific web property crawler file: 
+1. Update package.json with the script name and path. 
+2. Run `npm run NAME` where NAME is the name you set in package.json.
 
-## Further Reading
-- Cheerio Docs: https://cheerio.js.org/
-- Fetch Docs: https://github.com/bitinn/node-fetch
+## How it crawls docs
+
+## AWS Access / Permissions
+Uses Node.js AWS SDK to run client and authenticate requests as a user Clinton set up in his personal account. `GET` and `POST` requests are allowed via the following IP addresses. The admin user can also run `PUT` and `DELETE` requests from the following IP addresses:
+* `38.104.104.46`
+* `67.171.204.51`
+* `38.104.105.178`
+
+## TODO
+* Add paginating through docs endpoint
+* Add crawler for non-docs web property for further proof of concept
+* Convert `searchIndexID` property to number for sorting within DynamobDB
