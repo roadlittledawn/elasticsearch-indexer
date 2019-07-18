@@ -1,5 +1,7 @@
 const AWS = require('aws-sdk');
 const date = require('date-and-time');
+const dotenv = require('dotenv');
+dotenv.config();
 const { log } = console;
 
 var methods = {

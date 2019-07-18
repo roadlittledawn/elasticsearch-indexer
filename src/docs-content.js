@@ -1,7 +1,8 @@
 const fetch = require('node-fetch');
-const fs = require('fs');
 const AWS = require('aws-sdk');
 const crawlHistory = require('./crawl-history.js');
+const dotenv = require('dotenv');
+dotenv.config();
 
 const { log } = console;
 
