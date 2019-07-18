@@ -10,6 +10,7 @@
   "license": "MIT",
   "scripts": {
     "start": "node src",
+    "indexdocs" : "node src/docs-content.js",
     "lint": "node_modules/.bin/eslint src"
   },
   "dependencies": {
