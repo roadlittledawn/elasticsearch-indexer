@@ -1,3 +1,4 @@
+const newRelic = require('newrelic');
 const fetch = require('node-fetch');
 const AWS = require('aws-sdk');
 const crawlHistory = require('./crawl-history.js');
@@ -30,6 +31,15 @@ async function getBlogContent(page=1) {
   return res.json();
 }
 
+function makePlainText(text)
+{
+  return text.toString()
+    .replace(/<[^>]*>?/g, '') // Remove HTML tags around text
+    .replace(/(\\r\\n|\\n|\\r|\\t)/g, '') // Remove line break and spacing characters
+    .replace(/&#\d{1,4};/g, '') // Remove HTML character entities
+    .replace(/[^\w\-\ ]+/g, '') // Remove all non-word chars that are left
+}
+
 async function indexPage() {
 
   var endpoint = new AWS.Endpoint(searchIndexDomain);
@@ -42,12 +52,12 @@ async function indexPage() {
     request.method = 'PUT';
     request.path = `/${index}/${type}/${element.id}`;
     // Remove line break, spacing, and HTML tag characters that the Drupal Views display spits out.
-    element.content.rendered = element.content.rendered.replace(/(\r\n|\n|\r|\t|<[^>]*>?|&#\d{1,4};|[^\w\-]+)/gm," ");
+    // element.content.rendered = element.content.rendered.replace(/(\r\n|\n|\r|\t|<[^>]*>?|&#\d{1,4};|[^\w\-]+)/gm," ");
     var searchIndexJSON ='';
     var searchIndexJSON = {
       "url": element.link,
       "title" : element.title.rendered,
-      "body" : element.content.rendered
+      "body" : makePlainText(element.content.rendered)
     };
     
     request.body = JSON.stringify(searchIndexJSON);

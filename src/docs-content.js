@@ -1,3 +1,4 @@
+const newRelic = require('newrelic');
 const fetch = require('node-fetch');
 const AWS = require('aws-sdk');
 const crawlHistory = require('./crawl-history.js');
