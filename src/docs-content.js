@@ -1,7 +1,8 @@
-const newRelic = require('newrelic');
+require('newrelic');
 const fetch = require('node-fetch');
 const AWS = require('aws-sdk');
 const crawlHistory = require('./crawl-history.js');
+const utils = require('./utilities/utilities.js');
 const dotenv = require('dotenv');
 dotenv.config();
 
@@ -37,13 +38,13 @@ async function indexDocument() {
     request.method = 'PUT';
     request.path = `/${index}/${type}/${element.docsPage.nodeId}`;
     // Remove line break and spacing characters that the Drupal Views display spits out.
-    element.docsPage.body = element.docsPage.body.replace(/(\r\n|\n|\r|\t)/gm,"");
+    element.docsPage.body = utils.makePlainText(element.docsPage.body);
     request.body = JSON.stringify(element.docsPage);
     request.headers['host'] = domain;
     request.headers['Content-Type'] = 'application/json';
     // Content-Length is only needed for DELETE requests that include a request
     // body, but including it for all requests doesn't seem to hurt anything.
-    request.headers["Content-Length"] = request.body.length;
+    // request.headers["Content-Length"] = request.body.length;
 
     var credentials = new AWS.EnvironmentCredentials('AWS');
     var signer = new AWS.Signers.V4(request, 'es');

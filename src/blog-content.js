@@ -1,8 +1,10 @@
-const newRelic = require('newrelic');
+require('newrelic');
 const fetch = require('node-fetch');
 const AWS = require('aws-sdk');
-const crawlHistory = require('./crawl-history.js');
 const dotenv = require('dotenv');
+const crawlHistory = require('./crawl-history.js');
+const utils = require('./utilities/utilities.js');
+
 dotenv.config();
 
 const { log } = console;
@@ -21,52 +23,41 @@ var index = 'blog';
 var type = 'post';
 
 
-async function getBlogContent(page=1) {
+async function getBlogContent(page = 3) {
   const res = await fetch(`https://${webPropertyDomain}/wp-json/wp/v2/posts?page=${page}`, {
-    headers: { 
-      'Content-Type': 'application/json'
-   },
+    headers: {
+      'Content-Type': 'application/json',
+    },
   });
   if (!res.ok) throw new Error(`${res.statusCode}: ${res.statusText}`);
   return res.json();
 }
 
-function makePlainText(text)
-{
-  return text.toString()
-    .replace(/<[^>]*>?/g, '') // Remove HTML tags around text
-    .replace(/(\\r\\n|\\n|\\r|\\t)/g, '') // Remove line break and spacing characters
-    .replace(/&#\d{1,4};/g, '') // Remove HTML character entities
-    .replace(/[^\w\-\ ]+/g, '') // Remove all non-word chars that are left
-}
-
 async function indexPage() {
+  const endpoint = new AWS.Endpoint(searchIndexDomain);
+  const request = new AWS.HttpRequest(endpoint, region);
 
-  var endpoint = new AWS.Endpoint(searchIndexDomain);
-  var request = new AWS.HttpRequest(endpoint, region);
-
-  var json = await getBlogContent();
+  const json = await getBlogContent();
 
   json.forEach(element => {
-
     request.method = 'PUT';
     request.path = `/${index}/${type}/${element.id}`;
     // Remove line break, spacing, and HTML tag characters that the Drupal Views display spits out.
-    // element.content.rendered = element.content.rendered.replace(/(\r\n|\n|\r|\t|<[^>]*>?|&#\d{1,4};|[^\w\-]+)/gm," ");
-    var searchIndexJSON ='';
+    // element.content.rendered = makePlainText(element.content.rendered);
+    // log(utils.makePlainText(element.content.rendered));
     var searchIndexJSON = {
       "url": element.link,
       "title" : element.title.rendered,
-      "body" : makePlainText(element.content.rendered)
+      "body" : utils.makePlainText(element.content.rendered)
     };
+
     
     request.body = JSON.stringify(searchIndexJSON);
-    // log(`\n${JSON.stringify(request.body)},\n`);
     request.headers['host'] = searchIndexDomain;
     request.headers['Content-Type'] = 'application/json';
     // Content-Length is only needed for DELETE requests that include a request
     // body, but including it for all requests doesn't seem to hurt anything.
-    request.headers["Content-Length"] = request.body.length;
+    // request.headers["Content-Length"] = request.body.length;
 
     var credentials = new AWS.EnvironmentCredentials('AWS');
     var signer = new AWS.Signers.V4(request, 'es');
